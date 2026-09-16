@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Request - SonloKitchen</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Fonts & Icons -->
+    <link rel="icon" type="image/webp" href="images/logo-catering-dewi.webp">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <header class="header">
+        <button class="menu-toggle" id="menuToggle" data-tooltip="Menu Navigasi">
+            <i class="bx bx-menu"></i>
+        </button>
+        <h1 class="logo"><a href="index.html"><img src="images/logo-sonlokitchen.webp" alt="Logo"
+                    class="logo-img"><span>SonloKitchen</span></a></h1>
+        <div class="header-right">
+            <div class="opening-hours">
+                <i class="bx bx-time"></i> 09:00 - 20:00
+            </div>
+            <button class="theme-toggle" id="themeToggle" data-tooltip="Ganti Tema">
+                🌙
+            </button>
+            <button class="review-btn" onclick="openReviewForm()" data-tooltip="Tulis Ulasan">
+                <i class="bx bx-message-detail"></i>
+                <span class="review-text">Ulasan</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <button class="close-btn" id="closeSidebar" data-tooltip="Tutup Menu"><i class='bx bx-x'></i></button>
+        <ul>
+            <li><a href="index.html"><i class='bx bx-home'></i> Home</a></li>
+            <li><a href="menu.html"><i class='bx bxs-food-menu'></i> Menu</a></li>
+            <li><a href="about.html"><i class='bx bx-info-circle'></i> Tentang</a></li>
+            <li><a href="contact.html" class="active"><i class='bx bx-edit'></i> Request</a></li>
+            <li><a href="#" onclick="toggleCart()"><i class='bx bx-cart'></i> Keranjang</a></li>
+        </ul>
+
+        <!-- Sidebar Extra Info (Mobile Only) -->
+        <div class="sidebar-extra">
+            <div class="sidebar-info-item">
+                <i class="bx bx-time"></i> <span>09:00 - 20:00</span>
+            </div>
+            <button class="sidebar-review-btn" onclick="openReviewForm()">
+                <i class="bx bx-message-detail"></i> Tulis Ulasan
+            </button>
+        </div>
+    </aside>
+
+    <div class="overlay" id="overlay"></div>
+
+    <!-- PAGE HEADER -->
+    <section class="page-header">
+        <h2>Request</h2>
+        <p>Sampaikan permintaan khusus atau detail pesanan Anda di sini</p>
+    </section>
+
+    <!-- CONTACT CONTENT -->
+    <section class="content-section">
+        <div class="contact-container"
+            style="display: flex; flex-wrap: wrap; gap: 30px; align-items: start; max-width: 1000px; margin: 0 auto;">
+            <div class="notes-image" style="flex: 1; min-width: 300px;">
+                <img src="images/Dewi.jpeg" alt="Request"
+                    style="width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); object-fit: cover; height: 100%; max-height: 500px;">
+            </div>
+
+            <div class="contact-form"
+                style="flex: 1; min-width: 300px; background: var(--card-bg); padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                <h3 style="margin-bottom: 20px; color: var(--primary);">Tulis Catatan / Pesanan Khusus</h3>
+                <form onsubmit="return sendMessage(event)">
+                    <div class="form-group">
+                        <label>Nama Pemesan</label>
+                        <input type="text" id="name" required placeholder="Nama Anda">
+                    </div>
+                    <div class="form-group">
+                        <label>Detail Catatan</label>
+                        <textarea id="message" rows="6" required
+                            placeholder="Contoh: 'Tolong sambalnya dipisah', 'Ayam diganti ikan', dll..."></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn" style="width: 100%;" data-tooltip="Kirim ke WhatsApp">Kirim
+                        Catatan</button>
+
+                    <div class="contact-info-mini"
+                        style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 0.9rem; color: #666;">
+                        <p><i class='bx bx-home'></i> Jl. Mawar, Kadirojo2, purwomartani,kalasan sleman, Yogyakarta</p>
+                        <p><i class='bx bxl-whatsapp'></i> 0859-2732-6555</p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- CART -->
+    <div class="cart" id="cart">
+        <div class="cart-header">
+            <h3>Keranjang Pesanan</h3>
+            <button class="close-cart-btn" onclick="toggleCart()" data-tooltip="Tutup Keranjang"><i
+                    class='bx bx-x'></i></button>
+        </div>
+        <ul id="cartItems"></ul>
+        <p class="total">Total: Rp <span id="totalPrice">0</span></p>
+        <button class="order-btn" onclick="orderNow()" data-tooltip="Pesan via WhatsApp">Pesan Sekarang</button>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <p>© 2026 SonloKitchen</p>
+        <p>Nasi Box • Snack Box • Catering Harian</p>
+        <p>📞 WhatsApp: 6285927326555</p>
+    </footer>
+
+    <script>
+        function sendMessage(e) {
+            e.preventDefault();
+            const name = document.getElementById("name").value;
+            const msg = document.getElementById("message").value;
+            const fullMsg = `Halo, saya ${name}. ${msg}`;
+            window.open(`https://wa.me/6285927326555?text=${encodeURIComponent(fullMsg)}`, "_blank");
+            return false;
+        }
+    </script>
+    <!-- FLOATING CART -->
+    <button class="floating-cart-btn" onclick="toggleCart()" data-tooltip="Buka Keranjang">
+        <i class='bx bx-cart'></i>
+        <span id="cartCount">0</span>
+    </button>
+
+    <script type="module" src="script.js"></script>
+</body>
+
+</html>

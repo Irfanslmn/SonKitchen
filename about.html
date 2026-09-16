@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Tentang Kami - SonloKitchen</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Fonts & Icons -->
+    <link rel="icon" type="image/webp" href="images/logo-catering-dewi.webp">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <header class="header">
+        <button class="menu-toggle" id="menuToggle" data-tooltip="Menu Navigasi">
+            <i class="bx bx-menu"></i>
+        </button>
+        <h1 class="logo"><a href="index.html"><img src="images/logo-sonlokitchen.webp" alt="Logo"
+                    class="logo-img"><span>SonloKitchen</span></a></h1>
+        <div class="header-right">
+            <div class="opening-hours">
+                <i class="bx bx-time"></i> 09:00 - 20:00
+            </div>
+            <button class="theme-toggle" id="themeToggle" data-tooltip="Ganti Tema">
+                🌙
+            </button>
+            <button class="review-btn" onclick="openReviewForm()" data-tooltip="Tulis Ulasan">
+                <i class="bx bx-message-detail"></i>
+                <span class="review-text">Ulasan</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <button class="close-btn" id="closeSidebar" data-tooltip="Tutup Menu"><i class='bx bx-x'></i></button>
+        <ul>
+            <li><a href="index.html"><i class='bx bx-home'></i> Home</a></li>
+            <li><a href="menu.html"><i class='bx bxs-food-menu'></i> Menu</a></li>
+            <li><a href="about.html" class="active"><i class='bx bx-info-circle'></i> Tentang</a></li>
+            <li><a href="contact.html"><i class='bx bx-edit'></i> Request</a></li>
+            <li><a href="#" onclick="toggleCart()"><i class='bx bx-cart'></i> Keranjang</a></li>
+        </ul>
+
+        <!-- Sidebar Extra Info (Mobile Only) -->
+        <div class="sidebar-extra">
+            <div class="sidebar-info-item">
+                <i class="bx bx-time"></i> <span>09:00 - 20:00</span>
+            </div>
+            <button class="sidebar-review-btn" onclick="openReviewForm()">
+                <i class="bx bx-message-detail"></i> Tulis Ulasan
+            </button>
+        </div>
+    </aside>
+
+    <div class="overlay" id="overlay"></div>
+
+    <!-- PAGE HEADER -->
+    <section class="page-header">
+        <h2>Tentang Kami</h2>
+        <p>Mengenal lebih dekat SonloKitchen </p>
+    </section>
+
+    <!-- ABOUT CONTENT -->
+    <section class="content-section">
+        <div class="about-container">
+            <div class="about-text">
+                <h3>Cerita Kami</h3>
+                <p>Berdiri sejak tahun 2020, SonloKitchen bermula dari usaha rumahan kecil yang berkomitmen
+                    menyediakan masakan rumahan yang lezat dan higienis. Dengan resep turun-temurun dan bahan-bahan
+                    pilihan, kami kini melayani pesanan .</p>
+
+                <h3>Visi & Misi</h3>
+                <p><strong>Visi:</strong> Menjadi penyedia layanan catering terpercaya yang menghadirkan kebahagiaan di
+                    setiap suapan.</p>
+                <p><strong>Misi:</strong></p>
+                <ul>
+                    <li>Mengutamakan kualitas dan kebersihan makanan.</li>
+                    <li>Memberikan pelayanan yang ramah dan tepat waktu.</li>
+                    <li>Menyediakan harga yang terjangkau untuk semua kalangan.</li>
+                </ul>
+            </div>
+            <div class="about-image">
+                <img src="images/Dewi.jpeg" alt="Tentang SonloKitchen" class="img-responsive rounded">
+            </div>
+        </div>
+    </section>
+
+    <!-- LOCATION SECTION -->
+    <section class="location-section">
+        <div class="location-container">
+            <h3>Lokasi Kami</h3>
+            <div class="map-card">
+                <div class="map-wrapper">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3953.208045664922!2d110.45098259999999!3d-7.767749499999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a5a4072ea3637%3A0x6dac61e093655510!2sJl.%20Mawar%2C%20Purwomartani%2C%20Kec.%20Kalasan%2C%20Kabupaten%20Sleman%2C%20Daerah%20Istimewa%20Yogyakarta%2055571!5e0!3m2!1sen!2sid!4v1768652708181!5m2!1sen!2sid"
+                        width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+                <div class="location-info">
+                    <p class="address-text">
+                        <i class='bx bxs-map' style="color: #ea4335; font-size: 1.5rem;"></i><br>
+                        <strong>SonloKitchen Kalasan</strong><br>
+                        Kalasan, Kab. Sleman, D.I. Yogyakarta
+                    </p>
+                    <a href="https://maps.app.goo.gl/tS2TLrZFGtr9ucUD9" target="_blank" class="map-btn">
+                        <i class='bx bx-map-alt'></i> Petunjuk Arah
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CART -->
+    <div class="cart" id="cart">
+        <div class="cart-header">
+            <h3>Keranjang Pesanan</h3>
+            <button class="close-cart-btn" onclick="toggleCart()" data-tooltip="Tutup Keranjang"><i
+                    class='bx bx-x'></i></button>
+        </div>
+        <ul id="cartItems"></ul>
+        <p class="total">Total: Rp <span id="totalPrice">0</span></p>
+        <button class="order-btn" onclick="orderNow()" data-tooltip="Pesan via WhatsApp">Pesan Sekarang</button>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <p>© 2026 SonloKitchen</p>
+        <p>Nasi Box • Snack Box • Catering Harian</p>
+        <p>📞 WhatsApp: 6285927326555</p>
+    </footer>
+
+    <!-- FLOATING CART -->
+    <button class="floating-cart-btn" onclick="toggleCart()" data-tooltip="Buka Keranjang">
+        <i class='bx bx-cart'></i>
+        <span id="cartCount">0</span>
+    </button>
+
+    <script type="module" src="script.js"></script>
+</body>
+
+</html>

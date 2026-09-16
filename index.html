@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>SonloKitchen</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css" />
+
+    <!-- Fonts -->
+    <link rel="icon" type="image/webp" href="images/logo-catering-dewi.webp" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+
+    <!-- BoxIcons -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+
+    <!-- SweetAlert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <button class="menu-toggle" id="menuToggle" data-tooltip="Menu Navigasi">
+            <i class="bx bx-menu"></i>
+        </button>
+        <h1 class="logo"><a href="index.html"><img src="images/logo-sonlokitchen.webp" alt="Logo"
+                    class="logo-img"><span>SonloKitchen</span></a></h1>
+        <div class="header-right">
+            <div class="opening-hours">
+                <i class="bx bx-time"></i> 09:00 - 20:00
+            </div>
+            <button class="theme-toggle" id="themeToggle" data-tooltip="Ganti Tema">
+                🌙
+            </button>
+            <button class="review-btn" onclick="openReviewForm()" data-tooltip="Tulis Ulasan">
+                <i class="bx bx-message-detail"></i>
+                <span class="review-text">Ulasan</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <button class="close-btn" id="closeSidebar" data-tooltip="Tutup Menu">
+            <i class="bx bx-x"></i>
+        </button>
+        <ul>
+            <li>
+                <a href="index.html" class="active"><i class="bx bx-home"></i> Home</a>
+            </li>
+            <li>
+                <a href="menu.html"><i class="bx bxs-food-menu"></i> Menu</a>
+            </li>
+            <li>
+                <a href="about.html"><i class="bx bx-info-circle"></i> Tentang</a>
+            </li>
+            <li>
+                <a href="#" onclick="openTestimonialsModal()"><i class="bx bx-star"></i> Testimoni</a>
+            </li>
+            <li>
+                <a href="contact.html"><i class="bx bx-edit"></i> Request</a>
+            </li>
+            <li>
+                <a href="#" onclick="toggleCart()"><i class="bx bx-cart"></i> Keranjang</a>
+            </li>
+        </ul>
+
+        <!-- Sidebar Extra Info (Mobile Only) -->
+        <div class="sidebar-extra">
+            <div class="sidebar-info-item">
+                <i class="bx bx-time"></i> <span>09:00 - 20:00</span>
+            </div>
+            <button class="sidebar-review-btn" onclick="openReviewForm()">
+                <i class="bx bx-message-detail"></i> Tulis Ulasan
+            </button>
+        </div>
+    </aside>
+
+    <div class="overlay" id="overlay"></div>
+
+    <!-- HERO -->
+    <section class="hero">
+        <h2>Makanan Lezat untuk Setiap Acara</h2>
+        <p>Praktis • Higienis • Terpercaya</p>
+        <a href="menu.html"><button style="
+            margin-top: 15px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            background: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+          ">
+                Lihat Menu
+            </button></a>
+    </section>
+
+    <!-- FEATURED SECTION -->
+    <section class="content-section" style="text-align: center">
+        <h3>Mengapa Memilih Kami?</h3>
+        <div style="
+          display: flex;
+          gap: 20px;
+          justify-content: center;
+          flex-wrap: wrap;
+          margin-top: 20px;
+        ">
+            <div class="card" style="max-width: 300px; padding: 10px">
+                <h4>🍓 Bahan Segar</h4>
+                <p>
+                    Kami hanya menggunakan bahan-bahan pilihan terbaik setiap harinya.
+                </p>
+            </div>
+            <div class="card" style="max-width: 300px; padding: 10px">
+                <h4>👩‍🍳 Tidak Menggunakan Bahan pengawet</h4>
+                <p>Aman untuk kesehatan anda dan keluarga.</p>
+            </div>
+            <div class="card" style="max-width: 300px; padding: 10px">
+                <h4>🚀 Pengiriman Tepat Waktu</h4>
+                <p>Pesanan Anda dijamin sampai sebelum acara dimulai.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section id="testimonials" class="content-section" style="background: var(--bg-alt); text-align: center">
+        <h3>Apa Kata Mereka?</h3>
+        <div style="
+          display: flex;
+          gap: 20px;
+          justify-content: center;
+          flex-wrap: wrap;
+          margin-top: 20px;
+        ">
+            <div class="testimonial-card">
+                <p>
+                    "Makanannya enak banget, bumbunya meresap sampai ke tulang!
+                    Recommended buat acara kantor."
+                </p>
+                <h5>- Budi Santoso ⭐⭐⭐⭐⭐</h5>
+            </div>
+            <div class="testimonial-card">
+                <p>
+                    "Pesan tumpeng mini buat ultah anak, hiasannya cantik dan rasanya
+                    juara."
+                </p>
+                <h5>- Siti Aminah ⭐⭐⭐⭐⭐</h5>
+            </div>
+            <div class="testimonial-card">
+                <p>
+                    "Pelayanan ramah dan pengiriman selalu tepat waktu. Langganan
+                    catering harian di sini."
+                </p>
+                <h5>- Rina Marlina ⭐⭐⭐⭐½</h5>
+            </div>
+        </div>
+    </section>
+
+    <!-- CART -->
+    <div class="cart" id="cart">
+        <div class="cart-header">
+            <h3>Keranjang Pesanan</h3>
+            <button class="close-cart-btn" onclick="toggleCart()" data-tooltip="Tutup Keranjang">
+                <i class="bx bx-x"></i>
+            </button>
+        </div>
+        <ul id="cartItems"></ul>
+        <p class="total">Total: Rp <span id="totalPrice">0</span></p>
+        <button class="order-btn" onclick="orderNow()" data-tooltip="Pesan via WhatsApp">Pesan Sekarang</button>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer" id="contact">
+        <p>© 2026 SonloKitchen</p>
+        <p>Nasi Box • Snack Box • Catering Harian</p>
+        <p>📞 WhatsApp: 6285927326555</p>
+    </footer>
+
+    <!-- FLOATING CART -->
+    <button class="floating-cart-btn" onclick="toggleCart()" data-tooltip="Buka Keranjang">
+        <i class="bx bx-cart"></i>
+        <span id="cartCount">0</span>
+    </button>
+
+    <!-- JS -->
+    <script type="module" src="script.js"></script>
+</body>
+
+</html>
