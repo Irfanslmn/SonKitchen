@@ -1,4 +1,4 @@
-const menuItems = [
+const defaultMenu = [
   {
     id: 'nasi-box-ayam-bakar',
     name: 'Nasi Box Ayam Bakar',
@@ -48,6 +48,8 @@ const menuItems = [
     desc: 'Tumpeng mini cocok untuk syukuran kecil dan acara keluarga.'
   }
 ];
+
+const menuItems = JSON.parse(localStorage.getItem('sonlokitchen_menu') || 'null') || defaultMenu;
 
 const storageKey = 'sonlokitchen_cart';
 let cart = JSON.parse(localStorage.getItem(storageKey) || '[]');

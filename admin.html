@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin SonloKitchen</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
+</head>
+
+<body class="admin-page">
+  <div class="admin-shell">
+    <div class="admin-login" id="loginBox">
+      <div class="admin-card">
+        <h2>Login Admin</h2>
+        <p>Masuk untuk mengubah menu website.</p>
+        <div class="login-note">Username: admin<br>PIN: 1234</div>
+        <form id="loginForm">
+          <label>
+            <span>Username</span>
+            <input type="text" id="adminUsername" placeholder="Masukkan username" required />
+          </label>
+          <label>
+            <span>PIN</span>
+            <input type="password" id="adminPin" placeholder="Masukkan PIN" inputmode="numeric" maxlength="6" required />
+          </label>
+          <button type="submit" class="admin-btn">Masuk</button>
+        </form>
+        <p id="loginError" class="form-error"></p>
+      </div>
+    </div>
+
+    <div class="admin-panel hidden" id="adminPanel">
+      <div class="admin-header">
+        <div>
+          <h2>Kelola Menu</h2>
+          <p>Ubah judul, harga, kategori, dan deskripsi menu.</p>
+        </div>
+        <button id="logoutBtn" class="secondary-btn">Keluar</button>
+      </div>
+
+      <div id="menuEditor" class="menu-editor"></div>
+      <div class="admin-actions">
+        <button id="saveMenuBtn" class="admin-btn">Simpan Perubahan</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+
+</html>
