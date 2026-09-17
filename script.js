@@ -49,10 +49,23 @@ const defaultMenu = [
   }
 ];
 
-const menuItems = JSON.parse(localStorage.getItem('sonlokitchen_menu') || 'null') || defaultMenu;
+let menuItems = [];
+
+const getMenuItems = () => {
+  const saved = JSON.parse(localStorage.getItem('sonlokitchen_menu') || 'null');
+  const source = Array.isArray(saved) && saved.length ? saved : defaultMenu;
+
+  if (!Array.isArray(saved) || !saved.length) {
+    localStorage.setItem('sonlokitchen_menu', JSON.stringify(defaultMenu));
+  }
+
+  menuItems = source;
+  return menuItems;
+};
 
 const storageKey = 'sonlokitchen_cart';
 let cart = JSON.parse(localStorage.getItem(storageKey) || '[]');
+getMenuItems();
 
 const formatRupiah = (value) => {
   return new Intl.NumberFormat('id-ID', {
@@ -66,13 +79,15 @@ const saveCart = () => {
   localStorage.setItem(storageKey, JSON.stringify(cart));
 };
 
-const getProductById = (id) => menuItems.find((item) => item.id === id);
+const getProductById = (id) => getMenuItems().find((item) => item.id === id);
 
 const renderMenu = () => {
   const menuList = document.getElementById('menuList');
   if (!menuList) return;
 
-  menuList.innerHTML = menuItems.map((item) => `
+  const activeMenu = getMenuItems();
+
+  menuList.innerHTML = activeMenu.map((item) => `
     <article class="menu-card">
       <img src="${item.image}" alt="${item.name}" class="menu-image">
       <div class="menu-info">
@@ -113,10 +128,24 @@ const updateCartUI = () => {
   const details = cart.map((entry) => {
     const product = getProductById(entry.id);
     if (!product) return null;
+
     return `
-      <li>
-        <span>${product.name} x${entry.qty}</span>
-        <span>${formatRupiah(product.price * entry.qty)}</span>
+      <li class="cart-item">
+        <div class="item-info">
+          <span class="item-name">${product.name}</span>
+          <span class="item-price">${formatRupiah(product.price)} / pcs</span>
+        </div>
+
+        <div class="cart-item-actions">
+          <div class="qty-controls">
+            <button class="qty-btn" data-action="decrease" data-id="${entry.id}" aria-label="Kurangi qty">-</button>
+            <span class="qty-val">${entry.qty}</span>
+            <button class="qty-btn" data-action="increase" data-id="${entry.id}" aria-label="Tambah qty">+</button>
+          </div>
+          <button class="delete-item-btn" data-id="${entry.id}" aria-label="Hapus item dari keranjang">
+            <i class='bx bx-trash'></i>
+          </button>
+        </div>
       </li>
     `;
   }).filter(Boolean).join('');
@@ -129,6 +158,35 @@ const updateCartUI = () => {
   cartItemsEl.innerHTML = details;
   totalPriceEl.textContent = total.toLocaleString('id-ID');
   cartCountEl.textContent = cart.reduce((count, item) => count + item.qty, 0);
+
+  cartItemsEl.querySelectorAll('.qty-btn').forEach((button) => {
+    button.addEventListener('click', () => {
+      const { id, action } = button.dataset;
+      const target = cart.find((item) => item.id === id);
+      if (!target) return;
+
+      if (action === 'increase') {
+        target.qty += 1;
+      } else {
+        target.qty -= 1;
+        if (target.qty <= 0) {
+          cart = cart.filter((item) => item.id !== id);
+        }
+      }
+
+      saveCart();
+      updateCartUI();
+    });
+  });
+
+  cartItemsEl.querySelectorAll('.delete-item-btn').forEach((button) => {
+    button.addEventListener('click', () => {
+      const { id } = button.dataset;
+      cart = cart.filter((item) => item.id !== id);
+      saveCart();
+      updateCartUI();
+    });
+  });
 };
 
 const addToCart = (id) => {
@@ -160,6 +218,14 @@ const toggleCart = () => {
   cartEl.classList.toggle('active');
   if (overlay) overlay.classList.toggle('active');
 };
+
+window.addEventListener('storage', (event) => {
+  if (event.key === 'sonlokitchen_menu') {
+    getMenuItems();
+    renderMenu();
+    updateCartUI();
+  }
+});
 
 const orderNow = () => {
   if (!cart.length) {

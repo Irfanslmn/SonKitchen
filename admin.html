@@ -15,8 +15,9 @@
   <div class="admin-shell">
     <div class="admin-login" id="loginBox">
       <div class="admin-card">
+        <div class="login-badge">SonloKitchen</div>
         <h2>Login Admin</h2>
-        <p>Masuk untuk mengubah menu website.</p>
+        <p>Masuk untuk mengelola menu dan foto produk website.</p>
         <div class="login-note">Username: admin<br>PIN: 1234</div>
         <form id="loginForm">
           <label>
@@ -35,20 +36,107 @@
 
     <div class="admin-panel hidden" id="adminPanel">
       <div class="admin-header">
-        <div>
-          <h2>Kelola Menu</h2>
-          <p>Ubah judul, harga, kategori, dan deskripsi menu.</p>
+        <div class="admin-title-wrap">
+          <div class="top-badge">Dashboard Admin</div>
+          <p class="eyebrow">Kelola Menu</p>
+          <h2>SonloKitchen CMS</h2>
         </div>
-        <button id="logoutBtn" class="secondary-btn">Keluar</button>
+        <div class="admin-header-actions">
+          <button type="button" id="previewMenuBtn" class="ghost-btn">Lihat Website</button>
+          <button type="button" id="newItemBtn" class="secondary-btn">Tambah Menu</button>
+          <button id="logoutBtn" class="ghost-btn danger" type="button">Keluar</button>
+        </div>
       </div>
 
-      <div id="menuEditor" class="menu-editor"></div>
-      <div class="admin-actions">
-        <button id="saveMenuBtn" class="admin-btn">Simpan Perubahan</button>
+      <div class="admin-stats">
+        <div class="stat-card">
+          <span>Total Menu</span>
+          <strong id="menuCount">0</strong>
+        </div>
+        <div class="stat-card">
+          <span>Kategori</span>
+          <strong id="categoryCount">0</strong>
+        </div>
+        <div class="stat-card">
+          <span>Status</span>
+          <strong id="lastSavedLabel">Siap</strong>
+        </div>
+      </div>
+
+      <div class="admin-grid">
+        <aside class="panel-list">
+          <div class="panel-title-row">
+            <h3>Daftar Menu</h3>
+            <div class="panel-actions">
+              <button id="saveMenuBtn" class="mini-btn" type="button">Simpan</button>
+            </div>
+          </div>
+
+          <div class="menu-toolbar">
+            <input id="searchInput" class="search-input" type="search" placeholder="Cari menu..." aria-label="Cari menu" />
+            <select id="categoryFilter" class="filter-select" aria-label="Filter kategori menu">
+              <option value="all">Semua kategori</option>
+            </select>
+          </div>
+
+          <div id="menuEditor" class="menu-editor"></div>
+        </aside>
+
+        <section class="panel-form">
+          <div class="panel-title-row">
+            <h3 id="formTitle">Tambah Menu Baru</h3>
+            <button type="button" id="cancelEditBtn" class="ghost-btn danger">Batal</button>
+          </div>
+
+          <form id="menuForm">
+            <div id="imageDropzone" class="image-dropzone" tabindex="0" aria-label="Upload foto menu">
+              <input type="file" id="imageInput" accept="image/*" hidden />
+              <div class="dropzone-content">
+                <div class="dropzone-icon">📷</div>
+                <p>Tarik foto ke sini atau <span>pilih file</span></p>
+                <small>JPG, PNG, WEBP</small>
+              </div>
+              <img id="imagePreview" class="image-preview hidden" alt="Preview foto menu" />
+            </div>
+
+            <div class="field-grid">
+              <label>
+                <span>Nama Menu</span>
+                <input id="menuName" type="text" placeholder="Contoh: Nasi Box Ayam Bakar" required />
+              </label>
+              <label>
+                <span>Kategori</span>
+                <input id="menuCategory" type="text" placeholder="Contoh: Nasi Box" required />
+              </label>
+            </div>
+
+            <div class="field-grid">
+              <label>
+                <span>Harga</span>
+                <input id="menuPrice" type="number" min="0" step="1000" placeholder="25000" required />
+              </label>
+              <label>
+                <span>URL Gambar</span>
+                <input id="menuImageUrl" type="text" placeholder="Atau masukkan URL gambar" />
+              </label>
+            </div>
+
+            <label>
+              <span>Deskripsi</span>
+              <textarea id="menuDesc" rows="4" placeholder="Tuliskan deskripsi menu..." required></textarea>
+            </label>
+
+            <div class="form-actions">
+              <button type="submit" class="admin-btn">Simpan Menu</button>
+              <button type="button" id="deleteActiveBtn" class="danger-btn hidden">Hapus Menu</button>
+            </div>
+          </form>
+        </section>
       </div>
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="admin.js"></script>
 </body>
 
