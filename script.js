@@ -157,7 +157,14 @@ const updateCartUI = () => {
 
   cartItemsEl.innerHTML = details;
   totalPriceEl.textContent = total.toLocaleString('id-ID');
-  cartCountEl.textContent = cart.reduce((count, item) => count + item.qty, 0);
+    const count = cart.reduce((count, item) => count + item.qty, 0);
+    cartCountEl.textContent = String(count);
+    // hide badge visually when cart is empty
+    try {
+      cartCountEl.style.display = count > 0 ? 'flex' : 'none';
+    } catch (e) {
+      /* ignore if element doesn't support style */
+    }
 
   cartItemsEl.querySelectorAll('.qty-btn').forEach((button) => {
     button.addEventListener('click', () => {
@@ -219,12 +226,35 @@ const toggleCart = () => {
   if (overlay) overlay.classList.toggle('active');
 };
 
-window.addEventListener('storage', (event) => {
-  if (event.key === 'sonlokitchen_menu') {
+const debounce = (fn, wait = 150) => {
+  let t;
+  return (...args) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...args), wait);
+  };
+};
+
+const refreshMenuFromStorage = debounce(() => {
+  try {
     getMenuItems();
     renderMenu();
     updateCartUI();
+  } catch (e) {
+    console.warn('Failed to refresh menu from storage', e);
   }
+}, 120);
+
+window.addEventListener('storage', (event) => {
+  if (!event || !event.key) return;
+  if (event.key === 'sonlokitchen_menu' || event.key === 'sonlokitchen_menu_sync') {
+    refreshMenuFromStorage();
+  }
+});
+
+// When user focuses or switches back to the tab, refresh to pick up changes
+window.addEventListener('focus', refreshMenuFromStorage);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') refreshMenuFromStorage();
 });
 
 const orderNow = () => {
