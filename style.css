@@ -1066,6 +1066,12 @@ body.dark-mode .card-price-badge {
     padding: 40px 20px;
 }
 
+/* Saat panel aktif (setelah login), ubah layout ke block */
+.admin-page.panel-visible {
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
 .admin-shell {
     width: min(1200px, 100%);
 }

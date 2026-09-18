@@ -148,11 +148,13 @@ function updateStats() {
 function showPanel() {
   loginBox.classList.add('hidden');
   adminPanel.classList.remove('hidden');
+  document.body.classList.add('panel-visible');
 }
 
 function showLogin() {
   loginBox.classList.remove('hidden');
   adminPanel.classList.add('hidden');
+  document.body.classList.remove('panel-visible');
 }
 
 function resetForm() {
@@ -690,6 +692,37 @@ function initSettingsHandlers() {
   const saveSettingsBtn = el('saveSettingsBtn');
   if (saveSettingsBtn) {
     saveSettingsBtn.addEventListener('click', () => {
+      const rawMapsLink = el('set-mapsLink')?.value.trim() || '';
+      const rawMapsLabel = el('set-mapsLabel')?.value.trim() || '';
+
+      // Bedakan: jika link adalah embed URL → simpan sebagai mapsEmbed
+      // jika link adalah share link (goo.gl) → simpan sebagai mapsLink saja
+      let mapsEmbed = defaultSettings.mapsEmbed;
+      let mapsLink = defaultSettings.mapsLink;
+
+      if (rawMapsLink) {
+        if (rawMapsLink.includes('google.com/maps/embed')) {
+          // Ini sudah format embed, gunakan untuk iframe
+          mapsEmbed = rawMapsLink;
+          mapsLink = rawMapsLink; // juga bisa untuk link
+        } else if (rawMapsLink.includes('maps.app.goo.gl') || rawMapsLink.includes('goo.gl/maps')) {
+          // Ini share link, gunakan untuk tombol petunjuk arah saja
+          mapsLink = rawMapsLink;
+          // mapsEmbed tetap pakai yang sudah ada
+          const prevSettings = loadSettings();
+          mapsEmbed = prevSettings.mapsEmbed;
+        } else if (rawMapsLink.includes('google.com/maps')) {
+          // Full maps URL, coba ekstrak koordinat untuk embed
+          const coordMatch = rawMapsLink.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+          if (coordMatch) {
+            const lat = coordMatch[1];
+            const lng = coordMatch[2];
+            mapsEmbed = `https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d2000!2d${lng}!3d${lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sid!2sid!4v1`;
+          }
+          mapsLink = rawMapsLink;
+        }
+      }
+
       const settings = {
         storeName: el('set-storeName')?.value.trim() || defaultSettings.storeName,
         logoUrl: el('set-logoUrl')?.value.trim() || defaultSettings.logoUrl,
@@ -698,9 +731,9 @@ function initSettingsHandlers() {
         aboutImg: el('set-aboutImg')?.value.trim() || defaultSettings.aboutImg,
         aboutStory: el('set-aboutStory')?.value.trim() || defaultSettings.aboutStory,
         requestImg: el('set-requestImg')?.value.trim() || defaultSettings.requestImg,
-        mapsLink: el('set-mapsLink')?.value.trim() || defaultSettings.mapsLink,
-        mapsEmbed: el('set-mapsLink')?.value.trim() || defaultSettings.mapsEmbed,
-        mapsLabel: el('set-mapsLabel')?.value.trim() || defaultSettings.mapsLabel,
+        mapsLink,
+        mapsEmbed,
+        mapsLabel: rawMapsLabel || defaultSettings.mapsLabel,
       };
       saveSettings(settings);
       Swal.fire({

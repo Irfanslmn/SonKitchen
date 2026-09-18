@@ -366,6 +366,7 @@ const initPage = () => {
   initNavigation();
   renderMenu();
   updateCartUI();
+  applyGlobalSettings(); // terapkan settings setelah DOM & menu siap
 };
 
 document.addEventListener('DOMContentLoaded', initPage);
@@ -401,11 +402,9 @@ function applyGlobalSettings() {
 
   // ── Nama Toko ──
   if (storeName) {
-    // Header logo text (span inside .logo a)
-    document.querySelectorAll('.logo a span, .logo span').forEach((el) => {
+    document.querySelectorAll('.logo a span').forEach((el) => {
       el.textContent = storeName;
     });
-    // Page title
     const titleMap = {
       'menu.html': `Menu - ${storeName}`,
       'about.html': `Tentang Kami - ${storeName}`,
@@ -419,7 +418,7 @@ function applyGlobalSettings() {
 
   // ── Logo ──
   if (logoUrl) {
-    document.querySelectorAll('.logo-img').forEach((img) => {
+    document.querySelectorAll('img.logo-img').forEach((img) => {
       img.src = logoUrl;
     });
   }
@@ -429,12 +428,9 @@ function applyGlobalSettings() {
     const open = openTime || '09:00';
     const close = closeTime || '20:00';
     const hoursText = `${open} - ${close}`;
-
-    // Header opening hours
     document.querySelectorAll('.opening-hours').forEach((el) => {
       el.innerHTML = `<i class="bx bx-time"></i> ${hoursText}`;
     });
-    // Sidebar hours
     document.querySelectorAll('.sidebar-info-item span').forEach((el) => {
       el.textContent = hoursText;
     });
@@ -442,21 +438,15 @@ function applyGlobalSettings() {
 
   // ── Foto Tentang Kami (about.html) ──
   const aboutImgEl = document.getElementById('about-img');
-  if (aboutImgEl && aboutImg) {
-    aboutImgEl.src = aboutImg;
-  }
+  if (aboutImgEl && aboutImg) aboutImgEl.src = aboutImg;
 
   // ── Keterangan Cerita (about.html) ──
   const aboutStoryEl = document.getElementById('about-story');
-  if (aboutStoryEl && aboutStory) {
-    aboutStoryEl.textContent = aboutStory;
-  }
+  if (aboutStoryEl && aboutStory) aboutStoryEl.textContent = aboutStory;
 
   // ── Foto Request (contact.html) ──
   const requestImgEl = document.getElementById('request-img');
-  if (requestImgEl && requestImg) {
-    requestImgEl.src = requestImg;
-  }
+  if (requestImgEl && requestImg) requestImgEl.src = requestImg;
 
   // ── Google Maps Embed (about.html) ──
   const mapIframe = document.getElementById('about-map');
@@ -464,30 +454,22 @@ function applyGlobalSettings() {
     mapIframe.src = mapsEmbed;
   }
 
-  // ── Map Link (about.html) ──
-  const mapLink = document.getElementById('about-map-link');
-  if (mapLink && mapsLink) {
-    mapLink.href = mapsLink;
-  }
+  // ── Map Link / Petunjuk Arah (about.html) ──
+  const mapLinkEl = document.getElementById('about-map-link');
+  if (mapLinkEl && mapsLink) mapLinkEl.href = mapsLink;
 
-  // ── Map Label (about.html) ──
-  const mapLabel = document.getElementById('about-map-label');
-  if (mapLabel && mapsLabel) {
-    // Keep the map icon, replace text
-    const icon = mapLabel.querySelector('i');
-    mapLabel.innerHTML = '';
-    if (icon) mapLabel.appendChild(icon);
-    // Add <br> after icon then text
-    mapLabel.innerHTML += `<br>${mapsLabel.replace(/\n/g, '<br>')}`;
+  // ── Map Label / Alamat (about.html) ──
+  const mapLabelEl = document.getElementById('about-map-label');
+  if (mapLabelEl && mapsLabel) {
+    const iconEl = mapLabelEl.querySelector('i');
+    const iconHTML = iconEl ? iconEl.outerHTML : '';
+    mapLabelEl.innerHTML = `${iconHTML}<br>${mapsLabel.replace(/\n/g, '<br>')}`;
   }
 }
 
-// Re-apply when settings change from another tab (admin panel)
+// Re-apply saat settings diubah di tab lain (admin panel)
 window.addEventListener('storage', (event) => {
   if (event && event.key === 'sonlokitchen_settings_sync') {
     applyGlobalSettings();
   }
 });
-
-// Apply immediately on page load
-applyGlobalSettings();
