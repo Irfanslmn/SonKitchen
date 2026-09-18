@@ -68,18 +68,25 @@ const defaultMenu = [
 ];
 
 const menuState = (() => {
-  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-  if (Array.isArray(saved) && saved.length) return saved;
+  let list = null;
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    if (Array.isArray(saved) && saved.length > 0) list = saved;
+  } catch (e) {}
 
-  const fallback = JSON.parse(localStorage.getItem('sonlokitchen_menu') || 'null');
-  if (Array.isArray(fallback) && fallback.length) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(fallback));
-    return fallback;
+  if (!list) {
+    try {
+      const fallback = JSON.parse(localStorage.getItem('sonlokitchen_menu') || 'null');
+      if (Array.isArray(fallback) && fallback.length > 0) list = fallback;
+    } catch (e) {}
   }
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultMenu));
-  localStorage.setItem('sonlokitchen_menu', JSON.stringify(defaultMenu));
-  return defaultMenu;
+  if (!list || !list.length) {
+    list = defaultMenu.map((item) => ({ ...item }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    localStorage.setItem('sonlokitchen_menu', JSON.stringify(list));
+  }
+  return list;
 })();
 
 let activeEditIndex = null;
@@ -91,6 +98,7 @@ const loginForm = document.getElementById('loginForm');
 const loginError = document.getElementById('loginError');
 const menuEditor = document.getElementById('menuEditor');
 const saveMenuBtn = document.getElementById('saveMenuBtn');
+const resetDefaultMenuBtn = document.getElementById('resetDefaultMenuBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const newItemBtn = document.getElementById('newItemBtn');
 const cancelEditBtn = document.getElementById('cancelEditBtn');
@@ -149,6 +157,8 @@ function showPanel() {
   loginBox.classList.add('hidden');
   adminPanel.classList.remove('hidden');
   document.body.classList.add('panel-visible');
+  renderEditor();
+  updateStats();
 }
 
 function showLogin() {
@@ -204,9 +214,37 @@ function populateCategoryFilter() {
   }
 }
 
+function restoreDefaultMenu() {
+  menuState.length = 0;
+  defaultMenu.forEach((item) => menuState.push({ ...item }));
+  persistMenu(menuState);
+  updateStats();
+  renderEditor();
+  Swal.fire({
+    icon: 'success',
+    title: 'Menu Contoh Dimuat!',
+    text: 'Berhasil memuat 6 menu contoh bawaan.',
+    timer: 1600,
+    showConfirmButton: false,
+    timerProgressBar: true
+  });
+}
+
 function renderEditor() {
   menuEditor.innerHTML = '';
   populateCategoryFilter();
+
+  if (!menuState.length) {
+    menuEditor.innerHTML = `
+      <div class="empty-state">
+        <p>Belum ada menu di dashboard.</p>
+        <button type="button" class="mini-btn" id="inlineRestoreBtn" style="margin-top:12px;">Muat 6 Menu Contoh</button>
+      </div>
+    `;
+    const inlineBtn = document.getElementById('inlineRestoreBtn');
+    if (inlineBtn) inlineBtn.addEventListener('click', restoreDefaultMenu);
+    return;
+  }
 
   const selectedCategory = categoryFilter ? categoryFilter.value : 'all';
   const keyword = searchInput ? searchInput.value.trim().toLowerCase() : '';
@@ -222,14 +260,14 @@ function renderEditor() {
     return;
   }
 
-  filteredMenu.forEach((item, originalIndex) => {
+  filteredMenu.forEach((item) => {
     const index = menuState.findIndex((menuItem) => menuItem.id === item.id);
     const card = document.createElement('div');
     card.className = 'editor-item';
     if (activeEditIndex === index) card.classList.add('is-selected');
     card.innerHTML = `
       <div class="editor-thumb-wrap">
-        <img src="${item.image || 'images/placeholder-food.webp'}" alt="${item.name}" class="editor-thumb" onerror="this.src='images/placeholder-food.webp'" />
+        <img src="${item.image || 'images/nasi-box-ayam-bakar.webp'}" alt="${item.name}" class="editor-thumb" onerror="this.onerror=null;this.src='images/nasi-box-ayam-bakar.webp'" />
       </div>
       <div class="editor-content">
         <div class="editor-header-row">
@@ -273,7 +311,7 @@ function renderEditor() {
         notify: true,
         title: 'Berhasil dihapus',
         text: 'Menu telah berhasil dihapus dari daftar utama.',
-        redirect: true
+        redirect: false
       });
     });
   });
@@ -426,6 +464,25 @@ saveMenuBtn.addEventListener('click', () => {
     redirect: false
   });
 });
+
+if (resetDefaultMenuBtn) {
+  resetDefaultMenuBtn.addEventListener('click', () => {
+    Swal.fire({
+      title: 'Muat Menu Contoh?',
+      text: 'Semua 6 menu contoh bawaan akan dimuat ke dashboard & website.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#2e7d32',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Ya, Muat Menu Contoh',
+      cancelButtonText: 'Batal'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        restoreDefaultMenu();
+      }
+    });
+  });
+}
 
 menuForm.addEventListener('submit', addOrUpdateMenu);
 
@@ -758,6 +815,10 @@ document.querySelectorAll('.admin-tab').forEach((tab) => {
     const targetEl = document.getElementById(targetId);
     if (targetEl) targetEl.classList.add('active');
     if (tab.dataset.tab === 'settings') populateSettingsForm();
+    if (tab.dataset.tab === 'menu') {
+      renderEditor();
+      updateStats();
+    }
   });
 });
 

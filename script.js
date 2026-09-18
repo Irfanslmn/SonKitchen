@@ -52,11 +52,22 @@ const defaultMenu = [
 let menuItems = [];
 
 const getMenuItems = () => {
-  const saved = JSON.parse(localStorage.getItem('sonlokitchen_menu') || 'null');
+  let saved = null;
+  try {
+    saved = JSON.parse(localStorage.getItem('sonlokitchen_menu') || 'null');
+  } catch (e) {}
+
+  if (!Array.isArray(saved) || !saved.length) {
+    try {
+      saved = JSON.parse(localStorage.getItem('sonlokitchen_menu_admin') || 'null');
+    } catch (e) {}
+  }
+
   const source = Array.isArray(saved) && saved.length ? saved : defaultMenu;
 
   if (!Array.isArray(saved) || !saved.length) {
     localStorage.setItem('sonlokitchen_menu', JSON.stringify(defaultMenu));
+    localStorage.setItem('sonlokitchen_menu_admin', JSON.stringify(defaultMenu));
   }
 
   menuItems = source;
@@ -64,7 +75,13 @@ const getMenuItems = () => {
 };
 
 const storageKey = 'sonlokitchen_cart';
-let cart = JSON.parse(localStorage.getItem(storageKey) || '[]');
+let cart = [];
+try {
+  cart = JSON.parse(localStorage.getItem(storageKey) || '[]');
+  if (!Array.isArray(cart)) cart = [];
+} catch (e) {
+  cart = [];
+}
 getMenuItems();
 
 const formatRupiah = (value) => {
@@ -87,24 +104,29 @@ const renderMenu = () => {
 
   const activeMenu = getMenuItems();
 
+  if (!activeMenu || !activeMenu.length) {
+    menuList.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666; padding: 40px;">Belum ada menu yang tersedia.</p>';
+    return;
+  }
+
   menuList.innerHTML = activeMenu.map((item) => `
     <article class="menu-card">
-      <img src="${item.image}" alt="${item.name}" class="menu-image">
+      <img src="${item.image || 'images/nasi-box-ayam-bakar.webp'}" alt="${item.name}" class="menu-image" onerror="this.onerror=null;this.src='images/nasi-box-ayam-bakar.webp'">
       <div class="menu-info">
         <div class="menu-top">
-          <span class="menu-category">${item.category}</span>
+          <span class="menu-category">${item.category || 'Menu'}</span>
           <h4>${item.name}</h4>
         </div>
-        <p>${item.desc}</p>
+        <p>${item.desc || ''}</p>
         <div class="menu-bottom">
-          <strong>${formatRupiah(item.price)}</strong>
+          <strong>${formatRupiah(item.price || 0)}</strong>
           <button class="add-btn" data-id="${item.id}">Tambah</button>
         </div>
       </div>
     </article>
   `).join('');
 
-  document.querySelectorAll('.add-btn').forEach((button) => {
+  menuList.querySelectorAll('.add-btn').forEach((button) => {
     button.addEventListener('click', () => {
       addToCart(button.dataset.id);
     });
@@ -366,15 +388,22 @@ const initPage = () => {
   initNavigation();
   renderMenu();
   updateCartUI();
-  applyGlobalSettings(); // terapkan settings setelah DOM & menu siap
+  applyGlobalSettings();
 };
 
-document.addEventListener('DOMContentLoaded', initPage);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initPage);
+} else {
+  initPage();
+}
 
 window.toggleCart = toggleCart;
 window.orderNow = orderNow;
 window.openReviewForm = openReviewForm;
 window.openTestimonialsModal = openTestimonialsModal;
+window.addToCart = addToCart;
+window.renderMenu = renderMenu;
+window.applyGlobalSettings = applyGlobalSettings;
 
 /* ─────────────────────────────────────────────────────────
    APPLY GLOBAL SETTINGS FROM ADMIN
