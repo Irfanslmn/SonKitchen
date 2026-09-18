@@ -3189,3 +3189,69 @@ body.dark-mode #modalAddBtn {
     border: 2px solid white;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
+
+/* SWEETALERT2 STYLING & DARK MODE */
+.swal2-popup {
+    border-radius: 20px !important;
+    font-family: inherit !important;
+    padding: 24px !important;
+}
+
+.swal-ewallet-number {
+    color: #1e293b;
+}
+
+.swal-ewallet-sub {
+    color: #64748b;
+}
+
+body.dark-mode .swal2-popup {
+    background: #1e293b !important;
+    color: #f1f5f9 !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.dark-mode .swal2-title {
+    color: #ffffff !important;
+}
+
+body.dark-mode .swal-order-modal label {
+    color: #f1f5f9 !important;
+}
+
+body.dark-mode .swal-payment-box {
+    background: rgba(255, 94, 20, 0.15) !important;
+}
+
+body.dark-mode .swal-ewallet-number {
+    color: #ffffff !important;
+}
+
+body.dark-mode .swal-ewallet-sub {
+    color: #cbd5e1 !important;
+}
+
+body.dark-mode .swal2-input,
+body.dark-mode .swal2-textarea {
+    background: rgba(15, 23, 42, 0.8) !important;
+    color: #f8fafc !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.16) !important;
+}
+
+body.dark-mode .swal2-input:focus,
+body.dark-mode .swal2-textarea:focus {
+    border-color: #ff5e14 !important;
+    box-shadow: 0 0 0 3px rgba(255, 94, 20, 0.25) !important;
+}
+
+body.dark-mode .swal2-input::placeholder,
+body.dark-mode .swal2-textarea::placeholder {
+    color: #94a3b8 !important;
+}
+
+body.dark-mode .swal2-validation-message {
+    background: #450a0a !important;
+    color: #fca5a5 !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+}

@@ -317,13 +317,15 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') refreshMenuFromStorage();
 });
 
-const orderNow = () => {
+const orderNow = async () => {
+  sanitizeCart();
   if (!cart.length) {
     if (typeof Swal !== 'undefined') {
       Swal.fire({
         icon: 'warning',
-        title: 'Keranjang kosong',
-        text: 'Silakan pilih menu terlebih dahulu.'
+        title: 'Keranjang Kosong',
+        text: 'Silakan pilih menu terlebih dahulu sebelum melakukan pemesanan.',
+        confirmButtonColor: '#ff5e14'
       });
     } else {
       alert('Keranjang kosong. Silakan pilih menu terlebih dahulu.');
@@ -331,18 +333,129 @@ const orderNow = () => {
     return;
   }
 
-  const message = cart.map((entry) => {
+  const savedSettings = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}');
+  const ewalletNumber = savedSettings.ewalletNumber || '087847712990';
+  const waNumber = (savedSettings.waNumber || '6285927326555').replace(/[^0-9]/g, '');
+  const storeName = savedSettings.storeName || 'SonloKitchen';
+
+  const orderLines = cart.map((entry) => {
     const product = getProductById(entry.id);
-    return `${product ? product.name : 'Menu'} x${entry.qty}`;
-  }).join(', ');
+    const name = product ? product.name : 'Menu';
+    const price = product ? product.price : 0;
+    const subtotal = price * entry.qty;
+    return `• ${name} x${entry.qty} (${formatRupiah(subtotal)})`;
+  });
 
   const total = cart.reduce((sum, entry) => {
     const product = getProductById(entry.id);
     return sum + (product ? product.price * entry.qty : 0);
   }, 0);
 
-  const text = `Halo SonloKitchen, saya mau pesan: ${message}. Total sekitar ${formatRupiah(total)}.`;
-  window.open(`https://wa.me/6285927326555?text=${encodeURIComponent(text)}`, '_blank');
+  // Ambil data pemesan yang tersimpan sebelumnya (jika ada)
+  let savedCustomer = {};
+  try {
+    savedCustomer = JSON.parse(localStorage.getItem('sonlokitchen_customer') || '{}');
+  } catch (e) {}
+
+  const defaultName = savedCustomer.name || '';
+  const defaultAddress = savedCustomer.address || '';
+
+  let buyerName = '';
+  let buyerAddress = '';
+  let buyerNote = '';
+
+  if (typeof Swal !== 'undefined') {
+    const { value: formValues, isConfirmed } = await Swal.fire({
+      title: 'Konfirmasi Pesanan',
+      html: `
+        <div class="swal-order-modal" style="text-align: left; font-size: 0.92rem;">
+          <div class="swal-payment-box" style="background: rgba(255, 94, 20, 0.08); border-left: 4px solid #ff5e14; padding: 12px 14px; border-radius: 8px; margin-bottom: 16px;">
+            <p style="margin: 0; font-weight: 600; color: #ff5e14; font-size: 0.88rem;">💳 Pembayaran Transfer / E-Wallet:</p>
+            <p class="swal-ewallet-number" style="margin: 4px 0 0; font-size: 1.08rem; font-weight: 800; letter-spacing: 0.5px;">
+              ${ewalletNumber}
+            </p>
+            <p class="swal-ewallet-sub" style="margin: 2px 0 0; font-size: 0.78rem;">(DANA / OVO / GoPay / ShopeePay / Transfer Bank)</p>
+          </div>
+
+          <div style="margin-bottom: 14px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.88rem;">Nama Pembeli <span style="color: #ef4444;">*</span></label>
+            <input id="swalBuyerName" class="swal2-input" style="width: 100%; margin: 0; padding: 10px 14px; font-size: 0.92rem; box-sizing: border-box; border-radius: 10px;" placeholder="Nama lengkap Anda" value="${defaultName.replace(/"/g, '&quot;')}" />
+          </div>
+
+          <div style="margin-bottom: 14px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.88rem;">Alamat Lengkap Pembeli <span style="color: #ef4444;">*</span></label>
+            <textarea id="swalBuyerAddress" class="swal2-textarea" style="width: 100%; height: 80px; margin: 0; padding: 10px 14px; font-size: 0.92rem; box-sizing: border-box; border-radius: 10px;" placeholder="Contoh: Jl. Mawar No. 12, RT 02/05, Purwomartani, Kalasan, Sleman">${defaultAddress}</textarea>
+          </div>
+
+          <div>
+            <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.88rem;">Catatan Khusus (Opsional)</label>
+            <input id="swalBuyerNote" class="swal2-input" style="width: 100%; margin: 0; padding: 10px 14px; font-size: 0.92rem; box-sizing: border-box; border-radius: 10px;" placeholder="Contoh: Sambal dipisah, minta sendok dll." />
+          </div>
+        </div>
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Kirim ke WhatsApp 📱',
+      cancelButtonText: 'Batal',
+      confirmButtonColor: '#ff5e14',
+      cancelButtonColor: '#94a3b8',
+      preConfirm: () => {
+        const name = (document.getElementById('swalBuyerName')?.value || '').trim();
+        const address = (document.getElementById('swalBuyerAddress')?.value || '').trim();
+        const note = (document.getElementById('swalBuyerNote')?.value || '').trim();
+
+        if (!name) {
+          Swal.showValidationMessage('Mohon isi Nama Pembeli.');
+          return false;
+        }
+        if (!address) {
+          Swal.showValidationMessage('Mohon isi Alamat Lengkap Pembeli.');
+          return false;
+        }
+
+        return { name, address, note };
+      }
+    });
+
+    if (!isConfirmed || !formValues) return;
+
+    buyerName = formValues.name;
+    buyerAddress = formValues.address;
+    buyerNote = formValues.note;
+
+    try {
+      localStorage.setItem('sonlokitchen_customer', JSON.stringify({ name: buyerName, address: buyerAddress }));
+    } catch (e) {}
+  } else {
+    buyerName = prompt('Nama Pembeli:') || '';
+    if (!buyerName) return;
+    buyerAddress = prompt('Alamat Lengkap Pengiriman:') || '';
+    if (!buyerAddress) return;
+    buyerNote = prompt('Catatan Tambahan (opsional):') || '';
+  }
+
+  const waLines = [
+    `*PESANAN BARU - ${storeName.toUpperCase()}*`,
+    `================================`,
+    `*Detail Pesanan:*`,
+    orderLines.join('\n'),
+    `--------------------------------`,
+    `*Total Belanja:* ${formatRupiah(total)}`,
+    ``,
+    `*Data Pembeli:*`,
+    `• *Nama:* ${buyerName}`,
+    `• *Alamat Pengiriman:* ${buyerAddress}`,
+    buyerNote ? `• *Catatan:* ${buyerNote}` : null,
+    ``,
+    `*Metode Pembayaran (E-Wallet / Rekening):*`,
+    `• *No. E-Wallet / Rekening:* ${ewalletNumber}`,
+    `  (DANA / OVO / GoPay / ShopeePay / Bank)`,
+    ``,
+    `Halo ${storeName}, tolong konfirmasi pesanan saya dan estimasi waktu/ongkirnya ya. Bukti transfer akan saya kirimkan ke sini. Terima kasih! 🙏`
+  ].filter((line) => line !== null);
+
+  const fullText = waLines.join('\n');
+  window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(fullText)}`, '_blank');
 };
 
 const openReviewForm = async () => {

@@ -13,7 +13,9 @@ const defaultSettings = {
   requestImg: 'images/Dewi.jpeg',
   mapsEmbed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3953.208045664922!2d110.45098259999999!3d-7.767749499999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a5a4072ea3637%3A0x6dac61e093655510!2sJl.%20Mawar%2C%20Purwomartani%2C%20Kec.%20Kalasan%2C%20Kabupaten%20Sleman%2C%20Daerah%20Istimewa%20Yogyakarta%2055571!5e0!3m2!1sen!2sid!4v1768652708181!5m2!1sen!2sid',
   mapsLink: 'https://maps.app.goo.gl/tS2TLrZFGtr9ucUD9',
-  mapsLabel: 'SonloKitchen Kalasan\nKalasan, Kab. Sleman, D.I. Yogyakarta'
+  mapsLabel: 'SonloKitchen Kalasan\nKalasan, Kab. Sleman, D.I. Yogyakarta',
+  ewalletNumber: '087847712990',
+  waNumber: '6285927326555'
 };
 
 const defaultMenu = [
@@ -624,6 +626,8 @@ function populateSettingsForm() {
   if (el('set-requestImgPreview')) el('set-requestImgPreview').src = s.requestImg || 'images/Dewi.jpeg';
   if (el('set-mapsLink')) el('set-mapsLink').value = s.mapsLink || '';
   if (el('set-mapsLabel')) el('set-mapsLabel').value = s.mapsLabel || '';
+  if (el('set-ewalletNumber')) el('set-ewalletNumber').value = s.ewalletNumber || defaultSettings.ewalletNumber;
+  if (el('set-waNumber')) el('set-waNumber').value = s.waNumber || defaultSettings.waNumber;
   updateHoursPreview(s.openTime || '09:00', s.closeTime || '20:00');
 }
 
@@ -791,6 +795,8 @@ function initSettingsHandlers() {
         mapsLink,
         mapsEmbed,
         mapsLabel: rawMapsLabel || defaultSettings.mapsLabel,
+        ewalletNumber: el('set-ewalletNumber')?.value.trim() || defaultSettings.ewalletNumber,
+        waNumber: el('set-waNumber')?.value.trim() || defaultSettings.waNumber,
       };
       saveSettings(settings);
       Swal.fire({
