@@ -76,13 +76,26 @@ const getMenuItems = () => {
 
 const storageKey = 'sonlokitchen_cart';
 let cart = [];
-try {
-  cart = JSON.parse(localStorage.getItem(storageKey) || '[]');
-  if (!Array.isArray(cart)) cart = [];
-} catch (e) {
-  cart = [];
-}
+
+const loadCart = () => {
+  try {
+    cart = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    if (!Array.isArray(cart)) cart = [];
+  } catch (e) {
+    cart = [];
+  }
+  return cart;
+};
+loadCart();
 getMenuItems();
+
+const saveCart = () => {
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(cart));
+  } catch (e) {}
+};
+
+const getProductById = (id) => getMenuItems().find((item) => item.id === id);
 
 const formatRupiah = (value) => {
   return new Intl.NumberFormat('id-ID', {
@@ -92,11 +105,35 @@ const formatRupiah = (value) => {
   }).format(value);
 };
 
-const saveCart = () => {
-  localStorage.setItem(storageKey, JSON.stringify(cart));
+const sanitizeCart = () => {
+  loadCart();
+  const activeItems = getMenuItems();
+  const validCart = cart.filter((entry) => {
+    return entry && entry.id && activeItems.some(p => p.id === entry.id) && Number(entry.qty) > 0;
+  });
+  if (validCart.length !== cart.length) {
+    cart = validCart;
+    saveCart();
+  }
+  return cart;
 };
 
-const getProductById = (id) => getMenuItems().find((item) => item.id === id);
+// Segera bersihkan keranjang dari item invalid saat file dimuat
+sanitizeCart();
+
+const updateCartBadge = () => {
+  const cartCountEl = document.getElementById('cartCount');
+  if (!cartCountEl) return;
+  sanitizeCart();
+  const count = cart.reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
+  if (count > 0) {
+    cartCountEl.textContent = String(count);
+    cartCountEl.style.display = 'flex';
+  } else {
+    cartCountEl.textContent = '0';
+    cartCountEl.style.display = 'none';
+  }
+};
 
 const renderMenu = () => {
   const menuList = document.getElementById('menuList');
@@ -134,22 +171,25 @@ const renderMenu = () => {
 };
 
 const updateCartUI = () => {
+  sanitizeCart();
+  updateCartBadge();
+
   const cartItemsEl = document.getElementById('cartItems');
   const totalPriceEl = document.getElementById('totalPrice');
-  const cartCountEl = document.getElementById('cartCount');
 
-  if (!cartItemsEl || !totalPriceEl || !cartCountEl) return;
+  if (!cartItemsEl || !totalPriceEl) return;
 
-  if (cart.length === 0) {
+  const count = cart.reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
+
+  if (count === 0 || cart.length === 0) {
     cartItemsEl.innerHTML = '<li class="empty-cart">Keranjang masih kosong.</li>';
     totalPriceEl.textContent = '0';
-    cartCountEl.textContent = '0';
     return;
   }
 
   const details = cart.map((entry) => {
     const product = getProductById(entry.id);
-    if (!product) return null;
+    if (!product) return '';
 
     return `
       <li class="cart-item">
@@ -179,14 +219,6 @@ const updateCartUI = () => {
 
   cartItemsEl.innerHTML = details;
   totalPriceEl.textContent = total.toLocaleString('id-ID');
-    const count = cart.reduce((count, item) => count + item.qty, 0);
-    cartCountEl.textContent = String(count);
-    // hide badge visually when cart is empty
-    try {
-      cartCountEl.style.display = count > 0 ? 'flex' : 'none';
-    } catch (e) {
-      /* ignore if element doesn't support style */
-    }
 
   cartItemsEl.querySelectorAll('.qty-btn').forEach((button) => {
     button.addEventListener('click', () => {
@@ -230,13 +262,15 @@ const addToCart = (id) => {
   saveCart();
   updateCartUI();
 
-  Swal.fire({
-    icon: 'success',
-    title: 'Ditambahkan',
-    text: 'Menu berhasil ditambahkan ke keranjang.',
-    timer: 1000,
-    showConfirmButton: false
-  });
+  if (typeof Swal !== 'undefined') {
+    Swal.fire({
+      icon: 'success',
+      title: 'Ditambahkan',
+      text: 'Menu berhasil ditambahkan ke keranjang.',
+      timer: 1000,
+      showConfirmButton: false
+    });
+  }
 };
 
 const toggleCart = () => {
@@ -271,6 +305,10 @@ window.addEventListener('storage', (event) => {
   if (event.key === 'sonlokitchen_menu' || event.key === 'sonlokitchen_menu_sync') {
     refreshMenuFromStorage();
   }
+  if (event.key === storageKey) {
+    loadCart();
+    updateCartUI();
+  }
 });
 
 // When user focuses or switches back to the tab, refresh to pick up changes
@@ -281,11 +319,15 @@ document.addEventListener('visibilitychange', () => {
 
 const orderNow = () => {
   if (!cart.length) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Keranjang kosong',
-      text: 'Silakan pilih menu terlebih dahulu.'
-    });
+    if (typeof Swal !== 'undefined') {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Keranjang kosong',
+        text: 'Silakan pilih menu terlebih dahulu.'
+      });
+    } else {
+      alert('Keranjang kosong. Silakan pilih menu terlebih dahulu.');
+    }
     return;
   }
 
@@ -304,15 +346,21 @@ const orderNow = () => {
 };
 
 const openReviewForm = async () => {
-  const { value: review } = await Swal.fire({
-    title: 'Tulis Ulasan',
-    input: 'textarea',
-    inputLabel: 'Masukkan ulasan Anda',
-    inputPlaceholder: 'Contoh: Makanannya enak dan pengirimannya cepat.',
-    showCancelButton: true,
-    confirmButtonText: 'Kirim ke WhatsApp',
-    cancelButtonText: 'Batal'
-  });
+  let review = '';
+  if (typeof Swal !== 'undefined') {
+    const res = await Swal.fire({
+      title: 'Tulis Ulasan',
+      input: 'textarea',
+      inputLabel: 'Masukkan ulasan Anda',
+      inputPlaceholder: 'Contoh: Makanannya enak dan pengirimannya cepat.',
+      showCancelButton: true,
+      confirmButtonText: 'Kirim ke WhatsApp',
+      cancelButtonText: 'Batal'
+    });
+    review = res.value;
+  } else {
+    review = prompt('Masukkan ulasan Anda:');
+  }
 
   if (review) {
     const text = `Halo SonloKitchen, saya ingin memberi ulasan: ${review}`;
@@ -329,11 +377,15 @@ const openTestimonialsModal = () => {
     </div>
   `;
 
-  Swal.fire({
-    title: 'Testimoni Pelanggan',
-    html: testimonialHtml,
-    confirmButtonText: 'Tutup'
-  });
+  if (typeof Swal !== 'undefined') {
+    Swal.fire({
+      title: 'Testimoni Pelanggan',
+      html: testimonialHtml,
+      confirmButtonText: 'Tutup'
+    });
+  } else {
+    alert('Testimoni Pelanggan:\n- Budi: Makanannya enak banget!\n- Siti: Tumpeng mini juara!\n- Rina: Pelayanan ramah & on-time.');
+  }
 };
 
 const initNavigation = () => {
@@ -341,32 +393,29 @@ const initNavigation = () => {
   const closeSidebar = document.getElementById('closeSidebar');
   const overlay = document.getElementById('overlay');
   const themeToggle = document.getElementById('themeToggle');
+  const sidebar = document.getElementById('sidebar');
 
-  if (menuToggle) {
-    menuToggle.addEventListener('click', () => {
-      const sidebar = document.getElementById('sidebar');
-      if (sidebar) sidebar.style.left = '0';
-      if (overlay) overlay.classList.add('active');
-    });
-  }
+  const openNav = () => {
+    if (sidebar) {
+      sidebar.classList.add('active');
+      sidebar.style.left = '';
+    }
+    if (overlay) overlay.classList.add('active');
+  };
 
-  if (closeSidebar) {
-    closeSidebar.addEventListener('click', () => {
-      const sidebar = document.getElementById('sidebar');
-      if (sidebar) sidebar.style.left = '-260px';
-      if (overlay) overlay.classList.remove('active');
-    });
-  }
+  const closeNav = () => {
+    if (sidebar) {
+      sidebar.classList.remove('active');
+      sidebar.style.left = '';
+    }
+    if (overlay) overlay.classList.remove('active');
+    const cart = document.getElementById('cart');
+    if (cart) cart.classList.remove('active');
+  };
 
-  if (overlay) {
-    overlay.addEventListener('click', () => {
-      const sidebar = document.getElementById('sidebar');
-      if (sidebar) sidebar.style.left = '-260px';
-      overlay.classList.remove('active');
-      const cart = document.getElementById('cart');
-      if (cart) cart.classList.remove('active');
-    });
-  }
+  if (menuToggle) menuToggle.addEventListener('click', openNav);
+  if (closeSidebar) closeSidebar.addEventListener('click', closeNav);
+  if (overlay) overlay.addEventListener('click', closeNav);
 
   if (themeToggle) {
     const applyTheme = (darkMode) => {
@@ -384,26 +433,35 @@ const initNavigation = () => {
   }
 };
 
-const initPage = () => {
-  initNavigation();
-  renderMenu();
-  updateCartUI();
-  applyGlobalSettings();
-};
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initPage);
-} else {
-  initPage();
-}
-
 window.toggleCart = toggleCart;
 window.orderNow = orderNow;
 window.openReviewForm = openReviewForm;
 window.openTestimonialsModal = openTestimonialsModal;
 window.addToCart = addToCart;
 window.renderMenu = renderMenu;
+window.updateCartUI = updateCartUI;
+window.updateCartBadge = updateCartBadge;
 window.applyGlobalSettings = applyGlobalSettings;
+
+// Interaksi pergerakan cahaya ambient mengikuti mouse
+window.addEventListener('mousemove', (e) => {
+  const x = Math.round((e.clientX / window.innerWidth) * 100);
+  const y = Math.round((e.clientY / window.innerHeight) * 100);
+  document.documentElement.style.setProperty('--mouse-x', `${x}%`);
+  document.documentElement.style.setProperty('--mouse-y', `${y}%`);
+}, { passive: true });
+
+// Efek header saat scroll
+window.addEventListener('scroll', () => {
+  const header = document.querySelector('.header');
+  if (header) {
+    if (window.scrollY > 20) {
+      header.classList.add('header-scrolled');
+    } else {
+      header.classList.remove('header-scrolled');
+    }
+  }
+}, { passive: true });
 
 /* ─────────────────────────────────────────────────────────
    APPLY GLOBAL SETTINGS FROM ADMIN
@@ -502,3 +560,18 @@ window.addEventListener('storage', (event) => {
     applyGlobalSettings();
   }
 });
+
+/* ─── INISIALISASI HALAMAN ─── */
+const initPage = () => {
+  initNavigation();
+  renderMenu();
+  updateCartUI();
+  applyGlobalSettings();
+};
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initPage);
+} else {
+  initPage();
+}
+
