@@ -1,6 +1,20 @@
 const ADMIN_USER = 'admin';
 const ADMIN_PIN = '1234';
 const STORAGE_KEY = 'sonlokitchen_menu_admin';
+const SETTINGS_KEY = 'sonlokitchen_settings';
+
+const defaultSettings = {
+  storeName: 'SonloKitchen',
+  logoUrl: 'images/logo-sonlokitchen.webp',
+  openTime: '09:00',
+  closeTime: '20:00',
+  aboutImg: 'images/Dewi.jpeg',
+  aboutStory: 'Berdiri sejak tahun 2020, SonloKitchen bermula dari usaha rumahan kecil yang berkomitmen menyediakan masakan rumahan yang lezat dan higienis. Dengan resep turun-temurun dan bahan-bahan pilihan, kami kini melayani pesanan.',
+  requestImg: 'images/Dewi.jpeg',
+  mapsEmbed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3953.208045664922!2d110.45098259999999!3d-7.767749499999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a5a4072ea3637%3A0x6dac61e093655510!2sJl.%20Mawar%2C%20Purwomartani%2C%20Kec.%20Kalasan%2C%20Kabupaten%20Sleman%2C%20Daerah%20Istimewa%20Yogyakarta%2055571!5e0!3m2!1sen!2sid!4v1768652708181!5m2!1sen!2sid',
+  mapsLink: 'https://maps.app.goo.gl/tS2TLrZFGtr9ucUD9',
+  mapsLabel: 'SonloKitchen Kalasan\nKalasan, Kab. Sleman, D.I. Yogyakarta'
+};
 
 const defaultMenu = [
   {
@@ -482,3 +496,236 @@ if (localStorage.getItem('sonlokitchen_admin_logged_in') === 'true') {
 
 resetForm();
 updateStats();
+
+/* ─────────────────────────────────────────────────────────
+   SETTINGS MANAGEMENT
+───────────────────────────────────────────────────────── */
+
+function loadSettings() {
+  const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null');
+  return Object.assign({}, defaultSettings, saved || {});
+}
+
+function saveSettings(settings) {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  localStorage.setItem('sonlokitchen_settings_sync', String(Date.now()));
+}
+
+function convertMapsLinkToEmbed(link) {
+  if (!link) return null;
+
+  // Already an embed URL
+  if (link.includes('google.com/maps/embed')) return link;
+
+  // Short share link: https://maps.app.goo.gl/...
+  // or https://goo.gl/maps/...
+  // We'll store the share link and construct embed from it
+  // Google Maps short links can't be directly embedded, but we can try
+  // to get the place ID from URL or just return null to indicate we need full embed
+  if (link.includes('maps.app.goo.gl') || link.includes('goo.gl/maps')) {
+    // Return a flag that we need to use the share link as-is for the href button
+    // but for embed we need the full URL
+    return '__shortlink__';
+  }
+
+  // Full google maps URL: https://www.google.com/maps/place/...
+  if (link.includes('google.com/maps')) {
+    // Try to extract coordinates or place for embed
+    const coordMatch = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (coordMatch) {
+      const lat = coordMatch[1];
+      const lng = coordMatch[2];
+      return `https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d1000!2d${lng}!3d${lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sid!2sid!4v1`;
+    }
+    // Convert /place/ URL to embed
+    const placeMatch = link.match(/\/place\/([^/]+)/);
+    if (placeMatch) {
+      const query = placeMatch[1];
+      return `https://www.google.com/maps/embed/v1/place?key=&q=${query}`;
+    }
+  }
+
+  return null;
+}
+
+function populateSettingsForm() {
+  const s = loadSettings();
+
+  const el = (id) => document.getElementById(id);
+
+  if (el('set-storeName')) el('set-storeName').value = s.storeName || '';
+  if (el('set-logoUrl')) el('set-logoUrl').value = s.logoUrl || '';
+  if (el('set-logoPreview')) el('set-logoPreview').src = s.logoUrl || 'images/logo-sonlokitchen.webp';
+  if (el('set-openTime')) el('set-openTime').value = s.openTime || '09:00';
+  if (el('set-closeTime')) el('set-closeTime').value = s.closeTime || '20:00';
+  if (el('set-aboutImg')) el('set-aboutImg').value = s.aboutImg || '';
+  if (el('set-aboutImgPreview')) el('set-aboutImgPreview').src = s.aboutImg || 'images/Dewi.jpeg';
+  if (el('set-aboutStory')) el('set-aboutStory').value = s.aboutStory || '';
+  if (el('set-requestImg')) el('set-requestImg').value = s.requestImg || '';
+  if (el('set-requestImgPreview')) el('set-requestImgPreview').src = s.requestImg || 'images/Dewi.jpeg';
+  if (el('set-mapsLink')) el('set-mapsLink').value = s.mapsLink || '';
+  if (el('set-mapsLabel')) el('set-mapsLabel').value = s.mapsLabel || '';
+  updateHoursPreview(s.openTime || '09:00', s.closeTime || '20:00');
+}
+
+function updateHoursPreview(open, close) {
+  const preview = document.getElementById('hours-preview-text');
+  if (preview) preview.textContent = `${open} - ${close}`;
+}
+
+function initSettingsHandlers() {
+  const el = (id) => document.getElementById(id);
+
+  // Hours preview live update
+  const openInput = el('set-openTime');
+  const closeInput = el('set-closeTime');
+  if (openInput) openInput.addEventListener('input', () => updateHoursPreview(openInput.value, closeInput?.value || ''));
+  if (closeInput) closeInput.addEventListener('input', () => updateHoursPreview(openInput?.value || '', closeInput.value));
+
+  // Logo upload
+  const logoUploadBtn = el('set-logoUploadBtn');
+  const logoInput = el('set-logoInput');
+  const logoPreview = el('set-logoPreview');
+  const logoUrlInput = el('set-logoUrl');
+  if (logoUploadBtn && logoInput) {
+    logoUploadBtn.addEventListener('click', () => logoInput.click());
+    logoInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const result = ev.target.result;
+        if (logoPreview) logoPreview.src = result;
+        if (logoUrlInput) logoUrlInput.value = result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+  if (logoUrlInput && logoPreview) {
+    logoUrlInput.addEventListener('input', () => {
+      if (logoUrlInput.value) logoPreview.src = logoUrlInput.value;
+    });
+  }
+
+  // About image upload
+  const aboutImgUploadBtn = el('set-aboutImgUploadBtn');
+  const aboutImgInput = el('set-aboutImgInput');
+  const aboutImgPreview = el('set-aboutImgPreview');
+  const aboutImgUrl = el('set-aboutImg');
+  if (aboutImgUploadBtn && aboutImgInput) {
+    aboutImgUploadBtn.addEventListener('click', () => aboutImgInput.click());
+    aboutImgInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const result = ev.target.result;
+        if (aboutImgPreview) aboutImgPreview.src = result;
+        if (aboutImgUrl) aboutImgUrl.value = result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+  if (aboutImgUrl && aboutImgPreview) {
+    aboutImgUrl.addEventListener('input', () => {
+      if (aboutImgUrl.value) aboutImgPreview.src = aboutImgUrl.value;
+    });
+  }
+
+  // Request image upload
+  const requestImgUploadBtn = el('set-requestImgUploadBtn');
+  const requestImgInput = el('set-requestImgInput');
+  const requestImgPreview = el('set-requestImgPreview');
+  const requestImgUrl = el('set-requestImg');
+  if (requestImgUploadBtn && requestImgInput) {
+    requestImgUploadBtn.addEventListener('click', () => requestImgInput.click());
+    requestImgInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const result = ev.target.result;
+        if (requestImgPreview) requestImgPreview.src = result;
+        if (requestImgUrl) requestImgUrl.value = result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+  if (requestImgUrl && requestImgPreview) {
+    requestImgUrl.addEventListener('input', () => {
+      if (requestImgUrl.value) requestImgPreview.src = requestImgUrl.value;
+    });
+  }
+
+  // Maps link apply
+  const mapsApplyBtn = el('set-mapsApplyBtn');
+  const mapsLinkInput = el('set-mapsLink');
+  const mapsStatus = el('maps-status');
+  if (mapsApplyBtn && mapsLinkInput) {
+    mapsApplyBtn.addEventListener('click', () => {
+      const link = mapsLinkInput.value.trim();
+      if (!link) return;
+      const result = convertMapsLinkToEmbed(link);
+      if (result === '__shortlink__') {
+        if (mapsStatus) {
+          mapsStatus.innerHTML = '✅ Link share Google Maps berhasil disimpan. <small>Catatan: Link share pendek (goo.gl) tidak bisa ditampilkan sebagai peta embed. Untuk peta embed, gunakan link "Embed a map" dari Google Maps.</small>';
+          mapsStatus.className = 'maps-status maps-status-warn';
+        }
+      } else if (result) {
+        if (mapsStatus) {
+          mapsStatus.innerHTML = '✅ Link berhasil dikonversi ke format embed!';
+          mapsStatus.className = 'maps-status maps-status-ok';
+        }
+        mapsLinkInput.value = result;
+      } else {
+        if (mapsStatus) {
+          mapsStatus.innerHTML = '⚠️ Format link tidak dikenali. Gunakan link dari Google Maps → Bagikan → Sematkan Peta (embed).';
+          mapsStatus.className = 'maps-status maps-status-error';
+        }
+      }
+    });
+  }
+
+  // Save settings
+  const saveSettingsBtn = el('saveSettingsBtn');
+  if (saveSettingsBtn) {
+    saveSettingsBtn.addEventListener('click', () => {
+      const settings = {
+        storeName: el('set-storeName')?.value.trim() || defaultSettings.storeName,
+        logoUrl: el('set-logoUrl')?.value.trim() || defaultSettings.logoUrl,
+        openTime: el('set-openTime')?.value || defaultSettings.openTime,
+        closeTime: el('set-closeTime')?.value || defaultSettings.closeTime,
+        aboutImg: el('set-aboutImg')?.value.trim() || defaultSettings.aboutImg,
+        aboutStory: el('set-aboutStory')?.value.trim() || defaultSettings.aboutStory,
+        requestImg: el('set-requestImg')?.value.trim() || defaultSettings.requestImg,
+        mapsLink: el('set-mapsLink')?.value.trim() || defaultSettings.mapsLink,
+        mapsEmbed: el('set-mapsLink')?.value.trim() || defaultSettings.mapsEmbed,
+        mapsLabel: el('set-mapsLabel')?.value.trim() || defaultSettings.mapsLabel,
+      };
+      saveSettings(settings);
+      Swal.fire({
+        icon: 'success',
+        title: 'Pengaturan Disimpan!',
+        text: 'Semua perubahan berhasil disimpan dan akan tampil di website.',
+        timer: 1800,
+        showConfirmButton: false,
+        timerProgressBar: true
+      });
+    });
+  }
+}
+
+// Tab switching
+document.querySelectorAll('.admin-tab').forEach((tab) => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.admin-tab').forEach((t) => t.classList.remove('active'));
+    document.querySelectorAll('.admin-tab-content').forEach((c) => c.classList.remove('active'));
+    tab.classList.add('active');
+    const targetId = `tab-${tab.dataset.tab}`;
+    const targetEl = document.getElementById(targetId);
+    if (targetEl) targetEl.classList.add('active');
+    if (tab.dataset.tab === 'settings') populateSettingsForm();
+  });
+});
+
+initSettingsHandlers();

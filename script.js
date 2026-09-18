@@ -374,3 +374,120 @@ window.toggleCart = toggleCart;
 window.orderNow = orderNow;
 window.openReviewForm = openReviewForm;
 window.openTestimonialsModal = openTestimonialsModal;
+
+/* ─────────────────────────────────────────────────────────
+   APPLY GLOBAL SETTINGS FROM ADMIN
+   Reads sonlokitchen_settings and updates all pages
+───────────────────────────────────────────────────────── */
+
+const SETTINGS_STORAGE_KEY = 'sonlokitchen_settings';
+
+function applyGlobalSettings() {
+  const saved = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || 'null');
+  if (!saved) return;
+
+  const {
+    storeName,
+    logoUrl,
+    openTime,
+    closeTime,
+    aboutImg,
+    aboutStory,
+    requestImg,
+    mapsEmbed,
+    mapsLink,
+    mapsLabel
+  } = saved;
+
+  // ── Nama Toko ──
+  if (storeName) {
+    // Header logo text (span inside .logo a)
+    document.querySelectorAll('.logo a span, .logo span').forEach((el) => {
+      el.textContent = storeName;
+    });
+    // Page title
+    const titleMap = {
+      'menu.html': `Menu - ${storeName}`,
+      'about.html': `Tentang Kami - ${storeName}`,
+      'contact.html': `Request - ${storeName}`,
+      'home.html': storeName,
+      'index.html': storeName
+    };
+    const page = window.location.pathname.split('/').pop() || 'index.html';
+    if (titleMap[page]) document.title = titleMap[page];
+  }
+
+  // ── Logo ──
+  if (logoUrl) {
+    document.querySelectorAll('.logo-img').forEach((img) => {
+      img.src = logoUrl;
+    });
+  }
+
+  // ── Jam Buka / Tutup ──
+  if (openTime || closeTime) {
+    const open = openTime || '09:00';
+    const close = closeTime || '20:00';
+    const hoursText = `${open} - ${close}`;
+
+    // Header opening hours
+    document.querySelectorAll('.opening-hours').forEach((el) => {
+      el.innerHTML = `<i class="bx bx-time"></i> ${hoursText}`;
+    });
+    // Sidebar hours
+    document.querySelectorAll('.sidebar-info-item span').forEach((el) => {
+      el.textContent = hoursText;
+    });
+  }
+
+  // ── Foto Tentang Kami (about.html) ──
+  const aboutImgEl = document.getElementById('about-img');
+  if (aboutImgEl && aboutImg) {
+    aboutImgEl.src = aboutImg;
+  }
+
+  // ── Keterangan Cerita (about.html) ──
+  const aboutStoryEl = document.getElementById('about-story');
+  if (aboutStoryEl && aboutStory) {
+    aboutStoryEl.textContent = aboutStory;
+  }
+
+  // ── Foto Request (contact.html) ──
+  const requestImgEl = document.getElementById('request-img');
+  if (requestImgEl && requestImg) {
+    requestImgEl.src = requestImg;
+  }
+
+  // ── Google Maps Embed (about.html) ──
+  const mapIframe = document.getElementById('about-map');
+  if (mapIframe && mapsEmbed && mapsEmbed.includes('google.com/maps')) {
+    mapIframe.src = mapsEmbed;
+  }
+
+  // ── Map Link (about.html) ──
+  const mapLink = document.getElementById('about-map-link');
+  if (mapLink && mapsLink) {
+    mapLink.href = mapsLink;
+  }
+
+  // ── Map Label (about.html) ──
+  const mapLabel = document.getElementById('about-map-label');
+  if (mapLabel && mapsLabel) {
+    // Keep the map icon, replace text
+    const icon = mapLabel.querySelector('i');
+    mapLabel.innerHTML = '';
+    if (icon) mapLabel.appendChild(icon);
+    // Add <br> after icon then text
+    mapLabel.innerHTML += `<br>${mapsLabel.replace(/\n/g, '<br>')}`;
+  }
+}
+
+// Re-apply when settings change from another tab (admin panel)
+window.addEventListener('storage', (event) => {
+  if (event && event.key === 'sonlokitchen_settings_sync') {
+    applyGlobalSettings();
+  }
+});
+
+// Apply immediately on page load
+applyGlobalSettings();

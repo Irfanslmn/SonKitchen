@@ -15,20 +15,35 @@
   <div class="admin-shell">
     <div class="admin-login" id="loginBox">
       <div class="admin-card">
-        <div class="login-badge">SonloKitchen</div>
-        <h2>Login Admin</h2>
+        <div class="admin-card-brand">
+          <div class="brand-icon">🍽️</div>
+          <div class="login-badge">SonloKitchen</div>
+        </div>
+        <h2>Selamat Datang 👋</h2>
         <p>Masuk untuk mengelola menu dan foto produk website.</p>
-        <div class="login-note">Username: admin<br>PIN: 1234</div>
+        <div class="login-note">
+          <span class="login-note-icon">🔑</span>
+          <div>
+            <strong>Akses Demo</strong><br>
+            Username: <code>admin</code> &nbsp;|&nbsp; PIN: <code>1234</code>
+          </div>
+        </div>
         <form id="loginForm">
-          <label>
+          <label class="input-icon-wrap">
             <span>Username</span>
-            <input type="text" id="adminUsername" placeholder="Masukkan username" required />
+            <div class="input-with-icon">
+              <span class="field-icon">👤</span>
+              <input type="text" id="adminUsername" placeholder="Masukkan username" required />
+            </div>
           </label>
-          <label>
+          <label class="input-icon-wrap">
             <span>PIN</span>
-            <input type="password" id="adminPin" placeholder="Masukkan PIN" inputmode="numeric" maxlength="6" required />
+            <div class="input-with-icon">
+              <span class="field-icon">🔒</span>
+              <input type="password" id="adminPin" placeholder="Masukkan PIN" inputmode="numeric" maxlength="6" required />
+            </div>
           </label>
-          <button type="submit" class="admin-btn">Masuk</button>
+          <button type="submit" class="admin-btn">Masuk ke Dashboard</button>
         </form>
         <p id="loginError" class="form-error"></p>
       </div>
@@ -48,91 +63,237 @@
         </div>
       </div>
 
-      <div class="admin-stats">
-        <div class="stat-card">
-          <span>Total Menu</span>
-          <strong id="menuCount">0</strong>
-        </div>
-        <div class="stat-card">
-          <span>Kategori</span>
-          <strong id="categoryCount">0</strong>
-        </div>
-        <div class="stat-card">
-          <span>Status</span>
-          <strong id="lastSavedLabel">Siap</strong>
-        </div>
+      <!-- TAB NAV -->
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-tab="menu">🍽️ Kelola Menu</button>
+        <button class="admin-tab" data-tab="settings">⚙️ Pengaturan Toko</button>
       </div>
 
-      <div class="admin-grid">
-        <aside class="panel-list">
-          <div class="panel-title-row">
-            <h3>Daftar Menu</h3>
-            <div class="panel-actions">
-              <button id="saveMenuBtn" class="mini-btn" type="button">Simpan</button>
-            </div>
+      <!-- TAB: MENU -->
+      <div class="admin-tab-content active" id="tab-menu">
+        <div class="admin-stats">
+          <div class="stat-card">
+            <span>Total Menu</span>
+            <strong id="menuCount">0</strong>
           </div>
-
-          <div class="menu-toolbar">
-            <input id="searchInput" class="search-input" type="search" placeholder="Cari menu..." aria-label="Cari menu" />
-            <select id="categoryFilter" class="filter-select" aria-label="Filter kategori menu">
-              <option value="all">Semua kategori</option>
-            </select>
+          <div class="stat-card">
+            <span>Kategori</span>
+            <strong id="categoryCount">0</strong>
           </div>
-
-          <div id="menuEditor" class="menu-editor"></div>
-        </aside>
-
-        <section class="panel-form">
-          <div class="panel-title-row">
-            <h3 id="formTitle">Tambah Menu Baru</h3>
-            <button type="button" id="cancelEditBtn" class="ghost-btn danger">Batal</button>
+          <div class="stat-card">
+            <span>Status</span>
+            <strong id="lastSavedLabel">Siap</strong>
           </div>
+        </div>
 
-          <form id="menuForm">
-            <div id="imageDropzone" class="image-dropzone" tabindex="0" aria-label="Upload foto menu">
-              <input type="file" id="imageInput" accept="image/*" hidden />
-              <div class="dropzone-content">
-                <div class="dropzone-icon">📷</div>
-                <p>Tarik foto ke sini atau <span>pilih file</span></p>
-                <small>JPG, PNG, WEBP</small>
+        <div class="admin-grid">
+          <aside class="panel-list">
+            <div class="panel-title-row">
+              <h3>Daftar Menu</h3>
+              <div class="panel-actions">
+                <button id="saveMenuBtn" class="mini-btn" type="button">Simpan</button>
               </div>
-              <img id="imagePreview" class="image-preview hidden" alt="Preview foto menu" />
             </div>
 
-            <div class="field-grid">
-              <label>
-                <span>Nama Menu</span>
-                <input id="menuName" type="text" placeholder="Contoh: Nasi Box Ayam Bakar" required />
-              </label>
-              <label>
-                <span>Kategori</span>
-                <input id="menuCategory" type="text" placeholder="Contoh: Nasi Box" required />
-              </label>
+            <div class="menu-toolbar">
+              <input id="searchInput" class="search-input" type="search" placeholder="Cari menu..." aria-label="Cari menu" />
+              <select id="categoryFilter" class="filter-select" aria-label="Filter kategori menu">
+                <option value="all">Semua kategori</option>
+              </select>
             </div>
 
-            <div class="field-grid">
-              <label>
-                <span>Harga</span>
-                <input id="menuPrice" type="number" min="0" step="1000" placeholder="25000" required />
-              </label>
-              <label>
-                <span>URL Gambar</span>
-                <input id="menuImageUrl" type="text" placeholder="Atau masukkan URL gambar" />
-              </label>
+            <div id="menuEditor" class="menu-editor"></div>
+          </aside>
+
+          <section class="panel-form">
+            <div class="panel-title-row">
+              <h3 id="formTitle">Tambah Menu Baru</h3>
+              <button type="button" id="cancelEditBtn" class="ghost-btn danger">Batal</button>
             </div>
 
-            <label>
-              <span>Deskripsi</span>
-              <textarea id="menuDesc" rows="4" placeholder="Tuliskan deskripsi menu..." required></textarea>
-            </label>
+            <form id="menuForm">
+              <div id="imageDropzone" class="image-dropzone" tabindex="0" aria-label="Upload foto menu">
+                <input type="file" id="imageInput" accept="image/*" hidden />
+                <div class="dropzone-content">
+                  <div class="dropzone-icon">📷</div>
+                  <p>Tarik foto ke sini atau <span>pilih file</span></p>
+                  <small>JPG, PNG, WEBP</small>
+                </div>
+                <img id="imagePreview" class="image-preview hidden" alt="Preview foto menu" />
+              </div>
 
-            <div class="form-actions">
-              <button type="submit" class="admin-btn">Simpan Menu</button>
-              <button type="button" id="deleteActiveBtn" class="danger-btn hidden">Hapus Menu</button>
-            </div>
-          </form>
-        </section>
+              <div class="field-grid">
+                <label>
+                  <span>Nama Menu</span>
+                  <input id="menuName" type="text" placeholder="Contoh: Nasi Box Ayam Bakar" required />
+                </label>
+                <label>
+                  <span>Kategori</span>
+                  <input id="menuCategory" type="text" placeholder="Contoh: Nasi Box" required />
+                </label>
+              </div>
+
+              <div class="field-grid">
+                <label>
+                  <span>Harga</span>
+                  <input id="menuPrice" type="number" min="0" step="1000" placeholder="25000" required />
+                </label>
+                <label>
+                  <span>URL Gambar</span>
+                  <input id="menuImageUrl" type="text" placeholder="Atau masukkan URL gambar" />
+                </label>
+              </div>
+
+              <label>
+                <span>Deskripsi</span>
+                <textarea id="menuDesc" rows="4" placeholder="Tuliskan deskripsi menu..." required></textarea>
+              </label>
+
+              <div class="form-actions">
+                <button type="submit" class="admin-btn">Simpan Menu</button>
+                <button type="button" id="deleteActiveBtn" class="danger-btn hidden">Hapus Menu</button>
+              </div>
+            </form>
+          </section>
+        </div>
       </div>
+
+      <!-- TAB: SETTINGS -->
+      <div class="admin-tab-content" id="tab-settings">
+        <div class="settings-grid">
+
+          <!-- IDENTITAS TOKO -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <span class="settings-icon">🏪</span>
+              <h3>Identitas Toko</h3>
+            </div>
+            <div class="settings-fields">
+              <label>
+                <span>Nama Toko</span>
+                <input id="set-storeName" type="text" placeholder="Contoh: SonloKitchen" />
+              </label>
+              <label>
+                <span>Logo Toko</span>
+                <div class="settings-upload-row">
+                  <div class="settings-logo-preview-wrap">
+                    <img id="set-logoPreview" src="images/logo-sonlokitchen.webp" alt="Preview Logo" class="settings-logo-preview" />
+                  </div>
+                  <div class="settings-upload-actions">
+                    <button type="button" class="mini-btn" id="set-logoUploadBtn">📁 Upload File</button>
+                    <input type="file" id="set-logoInput" accept="image/*" hidden />
+                    <input id="set-logoUrl" type="text" placeholder="Atau URL gambar logo" />
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- JAM OPERASIONAL -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <span class="settings-icon">🕐</span>
+              <h3>Jam Operasional</h3>
+            </div>
+            <div class="settings-fields">
+              <div class="field-grid">
+                <label>
+                  <span>Jam Buka</span>
+                  <input id="set-openTime" type="time" value="09:00" />
+                </label>
+                <label>
+                  <span>Jam Tutup</span>
+                  <input id="set-closeTime" type="time" value="20:00" />
+                </label>
+              </div>
+              <div class="hours-preview">
+                <i class="bx bx-time"></i>
+                <span id="hours-preview-text">09:00 - 20:00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- FOTO TENTANG KAMI -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <span class="settings-icon">📸</span>
+              <h3>Foto Tentang Kami</h3>
+            </div>
+            <div class="settings-fields">
+              <div class="settings-img-preview-wrap">
+                <img id="set-aboutImgPreview" src="images/Dewi.jpeg" alt="Preview" class="settings-img-preview" />
+              </div>
+              <button type="button" class="mini-btn" id="set-aboutImgUploadBtn">📁 Upload Foto</button>
+              <input type="file" id="set-aboutImgInput" accept="image/*" hidden />
+              <label>
+                <span>Atau URL Gambar</span>
+                <input id="set-aboutImg" type="text" placeholder="https://..." />
+              </label>
+            </div>
+          </div>
+
+          <!-- KETERANGAN TENTANG KAMI -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <span class="settings-icon">📝</span>
+              <h3>Keterangan Tentang Kami</h3>
+            </div>
+            <div class="settings-fields">
+              <label>
+                <span>Teks Cerita / Deskripsi Toko</span>
+                <textarea id="set-aboutStory" rows="5" placeholder="Ceritakan tentang toko Anda..."></textarea>
+              </label>
+            </div>
+          </div>
+
+          <!-- FOTO REQUEST -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <span class="settings-icon">📷</span>
+              <h3>Foto Halaman Request</h3>
+            </div>
+            <div class="settings-fields">
+              <div class="settings-img-preview-wrap">
+                <img id="set-requestImgPreview" src="images/Dewi.jpeg" alt="Preview" class="settings-img-preview" />
+              </div>
+              <button type="button" class="mini-btn" id="set-requestImgUploadBtn">📁 Upload Foto</button>
+              <input type="file" id="set-requestImgInput" accept="image/*" hidden />
+              <label>
+                <span>Atau URL Gambar</span>
+                <input id="set-requestImg" type="text" placeholder="https://..." />
+              </label>
+            </div>
+          </div>
+
+          <!-- LOKASI GOOGLE MAPS -->
+          <div class="settings-card settings-card-full">
+            <div class="settings-card-header">
+              <span class="settings-icon">📍</span>
+              <h3>Lokasi Toko (Google Maps)</h3>
+            </div>
+            <div class="settings-fields">
+              <label>
+                <span>Link Google Maps (dari tombol "Bagikan" / Share)</span>
+                <div class="maps-input-row">
+                  <input id="set-mapsLink" type="text" placeholder="Contoh: https://maps.app.goo.gl/abc123 atau URL embed maps" />
+                  <button type="button" class="mini-btn" id="set-mapsApplyBtn">✅ Gunakan Link Ini</button>
+                </div>
+              </label>
+              <div class="maps-status" id="maps-status"></div>
+              <label>
+                <span>Label Alamat (teks yang tampil di bawah peta)</span>
+                <input id="set-mapsLabel" type="text" placeholder="Contoh: SonloKitchen Kalasan, Sleman, Yogyakarta" />
+              </label>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="settings-save-bar">
+          <button type="button" id="saveSettingsBtn" class="admin-btn">💾 Simpan Semua Pengaturan</button>
+        </div>
+      </div>
+
     </div>
   </div>
 
